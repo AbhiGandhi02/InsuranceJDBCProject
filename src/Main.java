@@ -16,7 +16,7 @@ public class Main {
 
             // Sample customer details
             String name = "Abhi Gandhi";
-            String email = "ab@example.com";
+            String email = "abcd@example.com";
             String rawPassword = "mySecurePassword";
             String phone = "1234567890";
             String address = "Mumbai, India";
