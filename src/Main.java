@@ -24,7 +24,7 @@ public class Main {
         String password = "Abhi@123";
 
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
-            System.out.println("✅ Connected to the Insurance Database");
+            System.out.println("Connected to the Insurance Database");
 
             Scanner sc = new Scanner(System.in);
             CustomerDAO customerDAO = new CustomerDAO(conn);
