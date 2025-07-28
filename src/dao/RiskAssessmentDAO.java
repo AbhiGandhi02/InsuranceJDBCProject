@@ -1,37 +1,24 @@
 package dao;
 
 import model.RiskAssessment;
-import util.DBConnection;
+// import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class RiskAssessmentDAO {
+    private Connection conn;
 
-    public void addRiskAssessment(RiskAssessment ra) {
-        String sql = "INSERT INTO RiskAssessment (assessment_id, customer_id, risk_score, risk_category, assessment_date) VALUES (?, ?, ?, ?, ?)";
-
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, ra.getAssessmentId());
-            stmt.setLong(2, ra.getCustomerId());
-            stmt.setInt(3, ra.getRiskScore());
-            stmt.setString(4, ra.getRiskCategory());
-            stmt.setDate(5, ra.getAssessmentDate());
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public RiskAssessmentDAO(Connection conn) {
+        this.conn = conn;
     }
 
     public RiskAssessment getRiskAssessmentById(long id) {
-        String sql = "SELECT * FROM RiskAssessment WHERE assessment_id = ?";
+        String sql = "SELECT * FROM risk_assessment WHERE assessment_id = ?";
 
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -55,10 +42,9 @@ public class RiskAssessmentDAO {
 
     public List<RiskAssessment> getAllRiskAssessments() {
         List<RiskAssessment> list = new ArrayList<>();
-        String sql = "SELECT * FROM RiskAssessment";
+        String sql = "SELECT * FROM risk_assessment";
 
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -76,5 +62,32 @@ public class RiskAssessmentDAO {
         }
 
         return list;
+    }
+
+    public void addRiskAssessmentInteractive(Scanner sc) {
+        System.out.println("Enter Customer ID for Risk Assessment:");
+        int customerId = sc.nextInt();
+        sc.nextLine();
+        System.out.println("Enter Risk Score:");
+        double riskScore = sc.nextDouble();
+        sc.nextLine();
+        System.out.println("Enter Assessment Date (YYYY-MM-DD):");
+        String assessmentDate = sc.nextLine();
+
+        // Insert logic to add risk assessment to DB
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO risk_assessment (customer_id, risk_score, assessment_date) VALUES (?, ?, ?)")) {
+            stmt.setInt(1, customerId);
+            stmt.setDouble(2, riskScore);
+            stmt.setString(3, assessmentDate);
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Risk Assessment added successfully.");
+            } else {
+                System.out.println("Failed to add Risk Assessment.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }

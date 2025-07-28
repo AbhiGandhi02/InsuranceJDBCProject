@@ -1,35 +1,23 @@
 package dao;
 
 import model.Coverage;
-import util.DBConnection;
+// import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class CoverageDAO {
+    private Connection conn;
 
-    public void addCoverage(Coverage coverage) {
-        String sql = "INSERT INTO Coverage (coverage_id, policy_id, coverage_type, coverage_limit, description) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, coverage.getCoverageId());
-            stmt.setLong(2, coverage.getPolicyId());
-            stmt.setString(3, coverage.getCoverageType());
-            stmt.setBigDecimal(4, coverage.getCoverageLimit());
-            stmt.setString(5, coverage.getDescription());
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public CoverageDAO(Connection conn) {
+        this.conn = conn;
     }
 
     public Coverage getCoverageById(long id) {
         String sql = "SELECT * FROM Coverage WHERE coverage_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -53,8 +41,7 @@ public class CoverageDAO {
     public List<Coverage> getAllCoverages() {
         List<Coverage> list = new ArrayList<>();
         String sql = "SELECT * FROM Coverage";
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
+        try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -71,5 +58,33 @@ public class CoverageDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    // Interactive method to add coverage
+    public void addCoverageInteractive(Scanner sc) {
+        System.out.println("Enter Policy ID for Coverage:");
+        int policyId = sc.nextInt();
+        sc.nextLine();
+        System.out.println("Enter Coverage Type:");
+        String coverageType = sc.nextLine();
+        System.out.println("Enter Coverage Amount:");
+        double coverageAmount = sc.nextDouble();
+        sc.nextLine();
+
+        // You may need to adjust this according to your Coverage model and DB schema
+        try (PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO coverage (policy_id, coverage_type, coverage_amount) VALUES (?, ?, ?)")) {
+            stmt.setInt(1, policyId);
+            stmt.setString(2, coverageType);
+            stmt.setDouble(3, coverageAmount);
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Coverage added successfully.");
+            } else {
+                System.out.println("Failed to add coverage.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error adding coverage: " + e.getMessage());
+        }
     }
 }

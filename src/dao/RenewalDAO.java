@@ -1,35 +1,22 @@
 package dao;
 
 import model.Renewal;
-import util.DBConnection;
+// import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RenewalDAO {
+    private Connection conn;
 
-    public void addRenewal(Renewal renewal) {
-        String sql = "INSERT INTO Renewal (renewal_id, policy_id, renewal_date, new_end_date, renewal_premium) VALUES (?, ?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, renewal.getRenewalId());
-            stmt.setLong(2, renewal.getPolicyId());
-            stmt.setDate(3, renewal.getRenewalDate());
-            stmt.setDate(4, renewal.getNewEndDate());
-            stmt.setBigDecimal(5, renewal.getRenewalPremium());
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public RenewalDAO(Connection conn) {
+        this.conn = conn;
     }
 
     public Renewal getRenewalById(long id) {
-        String sql = "SELECT * FROM Renewal WHERE renewal_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT * FROM renewal WHERE renewal_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -52,9 +39,8 @@ public class RenewalDAO {
 
     public List<Renewal> getAllRenewals() {
         List<Renewal> list = new ArrayList<>();
-        String sql = "SELECT * FROM Renewal";
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
+        String sql = "SELECT * FROM renewal";
+        try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -71,5 +57,29 @@ public class RenewalDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    // Add this method to handle interactive policy renewal
+    public void renewPolicyInteractive(java.util.Scanner sc) {
+        System.out.print("Enter Policy ID to renew: ");
+        int policyId = sc.nextInt();
+        sc.nextLine();
+        System.out.print("Enter new renewal date (YYYY-MM-DD): ");
+        String renewalDate = sc.nextLine();
+
+        // Example implementation, adjust as needed
+        try (java.sql.PreparedStatement stmt = conn.prepareStatement(
+                "INSERT INTO renewals (policy_id, renewal_date) VALUES (?, ?)")) {
+            stmt.setInt(1, policyId);
+            stmt.setString(2, renewalDate);
+            int rows = stmt.executeUpdate();
+            if (rows > 0) {
+                System.out.println("Policy renewed successfully.");
+            } else {
+                System.out.println("Failed to renew policy.");
+            }
+        } catch (java.sql.SQLException e) {
+            System.out.println("Error renewing policy: " + e.getMessage());
+        }
     }
 }

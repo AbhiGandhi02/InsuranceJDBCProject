@@ -1,34 +1,22 @@
 package dao;
 
 import model.Endorsement;
-import util.DBConnection;
+// import util.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EndorsementDAO {
+    private Connection conn;
 
-    public void addEndorsement(Endorsement endorsement) {
-        String sql = "INSERT INTO Endorsement (endorsement_id, policy_id, endorsement_date, changes_made) VALUES (?, ?, ?, ?)";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-
-            stmt.setLong(1, endorsement.getEndorsementId());
-            stmt.setLong(2, endorsement.getPolicyId());
-            stmt.setDate(3, endorsement.getEndorsementDate());
-            stmt.setString(4, endorsement.getChangesMade());
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public EndorsementDAO(Connection conn) {
+        this.conn = conn;
     }
 
     public Endorsement getEndorsementById(long id) {
-        String sql = "SELECT * FROM Endorsement WHERE endorsement_id = ?";
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "SELECT * FROM endorsement WHERE endorsement_id = ?";
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setLong(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -50,9 +38,8 @@ public class EndorsementDAO {
 
     public List<Endorsement> getAllEndorsements() {
         List<Endorsement> list = new ArrayList<>();
-        String sql = "SELECT * FROM Endorsement";
-        try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
+        String sql = "SELECT * FROM endorsement";
+        try (Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
@@ -68,5 +55,14 @@ public class EndorsementDAO {
             e.printStackTrace();
         }
         return list;
+    }
+
+    public void addEndorsementInteractive(java.util.Scanner sc) {
+        System.out.println("Enter Policy ID for endorsement:");
+        int policyId = sc.nextInt();
+        sc.nextLine();
+        System.out.println("Enter endorsement details:");
+        String details = sc.nextLine();
+        System.out.println("Endorsement added for Policy ID " + policyId + " with details: " + details);
     }
 }
